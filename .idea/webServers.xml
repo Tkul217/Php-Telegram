@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="995df74a-49ec-4a73-8f92-0179392c0e81" name="dev" url="https://morcynkk.ru">
+        <fileTransfer rootFolder="/srv/Php-Telegram" accessType="SFTP" host="92.51.39.123" port="22" sshConfigId="9b65138c-d799-40d4-ad40-b31bdab1dbda" sshConfig="root@92.51.39.123:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
