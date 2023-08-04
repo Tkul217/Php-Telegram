@@ -1,5 +1,5 @@
 <?php
 
-$route = new \App\Core\Route();
+require_once 'src/routes.php';
 
-$route->start();
+$database = new \App\Database\DatabaseConnection();
