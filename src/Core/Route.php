@@ -19,7 +19,7 @@ class Route
 
     private function checkUrl($url): bool
     {
-        return $url === $_SERVER['REQUEST_URI'];
+        return $url === strtok($_SERVER['REQUEST_URI'], '?');
     }
 
     private function checkController($controller, $action): bool
