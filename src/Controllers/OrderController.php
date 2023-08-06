@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Database\DatabaseConnection;
 use App\DTO\OrderDTO;
+use App\Services\TelegramService;
 
 class OrderController extends Controller
 {
@@ -51,6 +52,13 @@ class OrderController extends Controller
             $conn->connection()?->prepare($sql)->execute(
               $data->toArray()
             );
+
+            $service = new TelegramService();
+
+            file_get_contents($service->sendMessage(
+                5530349508,
+                'Заказ ' . $_POST['product_name'] . ' Был создан'
+            ));
         }
         catch (\PDOException $e) {
             echo "Database error: " . $e->getMessage();

@@ -2,7 +2,14 @@
 
 namespace App\Config;
 
+use Dotenv\Dotenv;
+
 class TelegramConfig
 {
-    const URL = 'https://api.telegram.org/bot6402464136:AAHp9FI-BB1X_xFXkWmQAGrvmFP_jteaiiI/';
+    public static function getURL(): string
+    {
+        Dotenv::createImmutable(dirname(__DIR__, 2))->load();
+
+        return 'https://api.telegram.org/bot' . $_ENV['TELEGRAM_BOT_TOKEN'] . '/';
+    }
 }
