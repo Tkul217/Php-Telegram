@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Config\TelegramConfig;
 use App\Services\TelegramService;
 
 class TelegramController
@@ -12,7 +11,7 @@ class TelegramController
         $service = new TelegramService();
 
         echo file_get_contents($service->send('setWebhook', [
-            'url' => 'https://morcynkk.ru/getWebhookData'
+            'url' => 'https://morcynkk.ru/webhook.php'
         ]));
     }
 
@@ -22,12 +21,4 @@ class TelegramController
 
         echo file_get_contents($service->send('deleteWebhook'));
     }
-
-//    public function getWebhookData()
-//    {
-//        echo file_get_contents($this->sendMessage(
-//            5530349508,
-//            'sdfsdf'
-//        ));
-//    }
 }
