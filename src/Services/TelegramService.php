@@ -27,11 +27,20 @@ class TelegramService
         return $url;
     }
 
-    public function sendMessage($chatId, $text): string
+    public function sendMessage($chatId, $text, $keyboard = null): string
     {
-        return $this->send('sendMessage', [
+        $parametres = [
             'chat_id' => $chatId,
             'text' => $text
-        ]);
+        ];
+
+        if ($keyboard)
+        {
+            $parametres = array_merge($parametres, [
+               'reply_markup' => json_encode($keyboard)
+            ]);
+        }
+
+        return $this->send('sendMessage', $parametres);
     }
 }

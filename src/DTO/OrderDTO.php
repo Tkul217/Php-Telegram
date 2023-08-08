@@ -4,14 +4,14 @@ namespace App\DTO;
 
 class OrderDTO
 {
-    private $product_id;
-    private $product_name;
-    private $product_count;
-    private $product_price;
-    private $created_at;
-    private $modified_at;
-    private $status;
-    private $phone;
+    public $product_id;
+    public $product_name;
+    public $product_count;
+    public $product_price;
+    public $created_at;
+    public $modified_at;
+    public $status;
+    public $phone;
     public function __construct(
         array $data
     )

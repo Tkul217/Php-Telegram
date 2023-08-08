@@ -57,7 +57,7 @@ class OrderController extends Controller
 
             file_get_contents($service->sendMessage(
                 5530349508,
-                'Заказ ' . $_POST['product_name'] . ' Был создан'
+                'Заказ: ' . $data->product_name . ' был создан с идентификатором товара ' . $data->product_id . ' на сумму ' . $data->product_price
             ));
         }
         catch (\PDOException $e) {
