@@ -11,3 +11,5 @@ $routes->call('/orderStore', \App\Controllers\OrderController::class, 'store');
 $routes->call('/setWebhook', \App\Controllers\TelegramController::class, 'setWebhook');
 
 $routes->call('/deleteWebhook', \App\Controllers\TelegramController::class, 'deleteWebhook');
+
+$routes->call('/callWebhook', \App\Controllers\TelegramController::class, 'callWebhook');
