@@ -39,6 +39,8 @@ class OrderController extends Controller
         try {
             $conn = new DatabaseConnection();
 
+            $conn = $conn->connection();
+
             $sql = "INSERT INTO orders (
                     product_id, product_name, product_count, product_price, created_at, modified_at, status, phone
 ) VALUES (
@@ -49,7 +51,7 @@ class OrderController extends Controller
                 $_POST
             );
 
-            $conn->connection()?->prepare($sql)->execute(
+            $conn->prepare($sql)->execute(
               $data->toArray()
             );
 
@@ -57,7 +59,7 @@ class OrderController extends Controller
 
             file_get_contents($service->sendMessage(
                 5530349508,
-                'Заказ: ' . $data->product_name . ' был создан с идентификатором товара ' . $data->product_id . ' на сумму ' . $data->product_price
+                'Заказ: ' . $data->product_name . ' был создан с идентификатором ' . $conn->lastInsertId() . ' на сумму ' . $data->product_price
             ));
         }
         catch (\PDOException $e) {

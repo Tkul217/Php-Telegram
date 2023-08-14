@@ -48,7 +48,7 @@ class TelegramService
 
 
         if ($message === 'Найти товар') {
-            $this->sendWebhookReply($chatId, 'Пожалуйста, введите идентификатор товара');
+            $this->sendWebhookReply($chatId, 'Пожалуйста, введите идентификатор заказа');
         }
 
         elseif (is_numeric($message)) {
@@ -141,7 +141,7 @@ class TelegramService
         foreach ($orders as $order) {
 
             $message .= "Ваш заказ: "
-                . " ID товара: " . $order['product_id']
+                . " ID заказа: " . $order['id']
                 . " Наименование товара: " . $order['product_name']
                 . " Цена: " . $order['product_price']
                 .  " Количество: " . $order['product_count'] . '%0A' . '%0A';
@@ -161,7 +161,7 @@ class TelegramService
         foreach ($orders as $order) {
 
             $message .= "Ваш заказ: "
-                . " ID товара: " . $order['product_id']
+                . " ID заказа: " . $order['id']
                 . " Наименование товара: " . $order['product_name']
                 . " Цена: " . $order['product_price']
                 .  " Количество: " . $order['product_count'] . '%0A' . '%0A';
@@ -191,7 +191,7 @@ class TelegramService
         foreach ($orders as $order) {
 
             $message .= "Ваш заказ: "
-                . " ID товара: " . $order['product_id']
+                . " ID товара: " . $order['id']
                 . " Наименование товара: " . $order['product_name']
                 . " Цена: " . $order['product_price']
                 .  " Количество: " . $order['product_count'] . '%0A' . '%0A';
@@ -200,9 +200,9 @@ class TelegramService
         $this->sendWebhookReply($chatId, $message);
     }
 
-    public function findOrder($chatId, $productId): void
+    public function findOrder($chatId, $orderId): void
     {
-        $sql = "SELECT * FROM orders WHERE product_id = $productId";
+        $sql = "SELECT * FROM orders WHERE id = $orderId";
 
         $order = $this->conn->connection()?->query($sql)->fetch();
 
@@ -213,8 +213,8 @@ class TelegramService
         else {
             $keyboard = [
                 'keyboard' => [
-                    ['Редактировать заказ с товаром: ' . $order['product_id']],
-                    ['Удалить заказ с товаром: ' . $order['product_id']]
+                    ['Редактировать заказ с идентификатором: ' . $order['id']],
+                    ['Удалить заказ с идентификатором: ' . $order['id']]
                 ],
                 'resize_keyboard' => true,
                 'one_time_keyboard' => true,
