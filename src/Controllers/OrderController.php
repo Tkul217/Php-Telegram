@@ -11,11 +11,9 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $conn = new DatabaseConnection();
-
         $sql = "SELECT * FROM products";
 
-        $posts = $conn->connection()?->query($sql)->fetchAll();
+        $posts = $this->conn->connection()?->query($sql)->fetchAll();
 
         $this->view->generate('orders/index.php', 'template_view.php', [
             'posts' => $posts
@@ -23,11 +21,9 @@ class OrderController extends Controller
     }
     public function create()
     {
-        $conn = new DatabaseConnection();
-
         $sql = "SELECT * FROM products WHERE id = " . $_GET['product_id'];
 
-        $product = $conn->connection()?->query($sql)->fetch();
+        $product = $this->conn->connection()?->query($sql)->fetch();
 
         $this->view->generate('orders/create.php', 'template_view.php', [
             'product' => $product
@@ -37,21 +33,19 @@ class OrderController extends Controller
     public function store()
     {
         try {
-            $conn = new DatabaseConnection();
-
-            $conn = $conn->connection();
+            $conn = $this->conn->connection();
 
             $sql = "INSERT INTO orders (
                     product_id, product_name, product_count, product_price, created_at, modified_at, status, phone
 ) VALUES (
-          ?, ?, ?, ?, ?, ?, ?, ?
+          :product_id, :product_name, :product_count, :product_price, :created_at, :modified_at, :status, :phone
 )";
 
             $data = new OrderDTO(
                 $_POST
             );
 
-            $conn->prepare($sql)->execute(
+            $conn?->prepare($sql)->execute(
               $data->toArray()
             );
 

@@ -22,12 +22,11 @@ class TelegramService
             $url .= $method;
         }
 
-        if ($parametres) {
+        if (!empty($parametres)) {
             foreach ($parametres as $name => $value) {
                 if ($name === array_key_first($parametres)) {
                     $url .= '?' . $name . '=' . $value;
-                }
-                else {
+                } else {
                     $url .= '&' . $name . '=' . $value;
                 }
             }
@@ -35,7 +34,7 @@ class TelegramService
         return $url;
     }
 
-    public function callWebhook() :void
+    public function callWebhook() :bool
     {
         $input = file_get_contents('php://input');
 
@@ -44,66 +43,52 @@ class TelegramService
         $chatId = $json['message']['chat']['id'];
         $message = $json['message']['text'];
 
-        $this->changeStatus($chatId);
-
-
-        if ($message === 'Найти товар') {
-            $this->sendWebhookReply($chatId, 'Пожалуйста, введите идентификатор заказа');
+        if (is_numeric($message)) {
+            return $this->findOrder($chatId, $message);
         }
 
-        elseif (is_numeric($message)) {
-            $this->findOrder($chatId, $message);
-        }
+        return match ($message) {
+            'Найти товар' => $this->sendWebhookReply($chatId, 'Пожалуйста, введите идентификатор заказа'),
+            'Получить список заказов' => $this->getOrders($chatId),
+            'Получить все заказы' => $this->allOrders($chatId),
+            'По наименованию товара' => $this->ordersByProductName($chatId),
+            'За текущий день' => $this->ordersByPeriod($chatId, 'day'),
+            'За неделю' => $this->ordersByPeriod($chatId, 'week'),
+            'За месяц' => $this->ordersByPeriod($chatId, 'month'),
+            'Пока' => $this->sendWebhookReply($chatId, 'До встречи!'),
+            default => $this->defaultAction($chatId)
+        };
+    }
 
-        elseif ($message === 'Пока') {
-            $this->sendWebhookReply($chatId, 'До встречи!');
-        }
+    public function getOrders($chatId): bool
+    {
+        $keyboard = [
+            'keyboard' => [
+                ['За текущий день', 'За неделю'],
+                ['За месяц', 'По наименованию товара'],
+                ['Получить все заказы']
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => true,
+        ];
 
-        else if ($message === 'Получить список заказов') {
-            $keyboard = [
-                'keyboard' => [
-                    ['За текущий день', 'За неделю'],
-                    ['За месяц', 'По наименованию товара'],
-                    ['Получить все заказы']
-                ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => true,
-            ];
+        return $this->sendWebhookReply($chatId, 'Укажите параметр для формирования списка заказов', $keyboard);
+    }
 
-            $this->sendWebhookReply($chatId, 'Укажите параметр для формирования списка заказов', $keyboard);
-        }
+    public function defaultAction($chatId): bool
+    {
+        $defaultMessage = 'Выберите действие';
 
-        else if ($message === 'За текущий день'){
-            $this->ordersByDay($chatId);
-        }
-        else if ($message === 'За прошлую неделю'){
-            $this->ordersByWeek($chatId);
-        }
-        else if ($message === 'За месяц'){
-            $this->ordersByMonth($chatId);
-        }
-        else if ($message === 'По наименованию товара'){
-            $this->ordersByProductName($chatId);
-        }
+        $keyboard = [
+            'keyboard' => [
+                ['Найти товар', 'Пока'],
+                ['Получить список заказов']
+            ],
+            'resize_keyboard' => true,
+            'one_time_keyboard' => true,
+        ];
 
-        else if ($message === 'Получить все заказы') {
-            $this->allOrders($chatId);
-        }
-
-        else {
-            $defaultMessage = 'Выберите действие';
-
-            $keyboard = [
-                'keyboard' => [
-                    ['Найти товар', 'Пока'],
-                    ['Получить список заказов']
-                ],
-                'resize_keyboard' => true,
-                'one_time_keyboard' => true,
-            ];
-
-            $this->sendWebhookReply($chatId, $defaultMessage, $keyboard);
-        }
+        return $this->sendWebhookReply($chatId, $defaultMessage, $keyboard);
     }
 
     public function sendMessage($chatId, $text, $keyboard = null): string
@@ -123,14 +108,24 @@ class TelegramService
         return $this->send('sendMessage', $parametres);
     }
 
-    public function sendWebhookReply($chatId, $message, $keyboard = null): void
+    public function sendWebhookReply($chatId, $message, $keyboard = null): bool
     {
         $response = file_get_contents($this->sendMessage($chatId, $message, $keyboard));
 
-        file_put_contents('logger.txt', PHP_EOL . $response, FILE_APPEND);
+        return file_put_contents('logger.txt', PHP_EOL . $response, FILE_APPEND);
     }
 
-    public function ordersByDay($chatId): void
+    public function ordersByPeriod($chatId, $period): bool
+    {
+        return match ($period) {
+            'day' => $this->ordersByDay($chatId),
+            'week' => $this->ordersByWeek($chatId),
+            'month' => $this->sendWebhookReply($chatId, 'orders by month'),
+        };
+    }
+
+
+    public function ordersByDay($chatId): bool
     {
         $sql = "select * from orders where date(created_at) = date(now())";
 
@@ -147,10 +142,10 @@ class TelegramService
                 .  " Количество: " . $order['product_count'] . '%0A' . '%0A';
         }
 
-        $this->sendWebhookReply($chatId, $message);
+        return $this->sendWebhookReply($chatId, $message);
     }
 
-    public function ordersByWeek($chatId): void
+    public function ordersByWeek($chatId): bool
     {
         $sql = "select * from orders where date_trunc('week', created_at) = date_trunc('week', now())";
 
@@ -167,20 +162,15 @@ class TelegramService
                 .  " Количество: " . $order['product_count'] . '%0A' . '%0A';
         }
 
-        $this->sendWebhookReply($chatId, $message);
+        return $this->sendWebhookReply($chatId, $message);
     }
 
-    public function ordersByMonth($chatId): void
+    public function ordersByProductName($chatId): bool
     {
-        $this->sendWebhookReply($chatId, 'orders by month');
+        return $this->sendWebhookReply($chatId, 'orders by product name');
     }
 
-    public function ordersByProductName($chatId): void
-    {
-        $this->sendWebhookReply($chatId, 'orders by product name');
-    }
-
-    public function allOrders($chatId): void
+    public function allOrders($chatId): bool
     {
         $sql = "SELECT * FROM orders";
 
@@ -197,10 +187,10 @@ class TelegramService
                 .  " Количество: " . $order['product_count'] . '%0A' . '%0A';
         }
 
-        $this->sendWebhookReply($chatId, $message);
+        return $this->sendWebhookReply($chatId, $message);
     }
 
-    public function findOrder($chatId, $orderId): void
+    public function findOrder($chatId, $orderId): bool
     {
         $sql = "SELECT * FROM orders WHERE id = $orderId";
 
@@ -227,28 +217,6 @@ class TelegramService
         }
 
         /** @var TYPE_NAME $keyboard */
-        $this->sendWebhookReply($chatId, $message, $keyboard);
-    }
-
-    public function editOrder($chatId)
-    {
-
-    }
-
-    public function changeStatus($chatId)
-    {
-        $message = "Hello! Here's an emoji:"; // Emoji code for a smiling face
-
-        $this->sendWebhookReply($chatId, $message);
-    }
-
-    public function deleteOrder($chatId)
-    {
-
-    }
-
-    public function confirmDeleteOrder($chatId)
-    {
-
+        return $this->sendWebhookReply($chatId, $message, $keyboard);
     }
 }

@@ -2,30 +2,24 @@
 
 namespace App\Controllers;
 
-use App\Services\TelegramService;
+use App\Core\Controller;
 
-class TelegramController
+class TelegramController extends Controller
 {
     public function setWebhook()
     {
-        $service = new TelegramService();
-
-        echo file_get_contents($service->send('setWebhook', [
+        echo file_get_contents($this->telegram->send('setWebhook', [
             'url' => 'https://morcynkk.ru/callWebhook'
         ]));
     }
 
     public function deleteWebhook()
     {
-        $service = new TelegramService();
-
-        echo file_get_contents($service->send('deleteWebhook'));
+        echo file_get_contents($this->telegram->send('deleteWebhook'));
     }
 
     public function callWebhook(): void
     {
-        $telegram = new TelegramService();
-
-        $telegram->callWebhook();
+        $this->telegram->callWebhook();
     }
 }
